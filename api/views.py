@@ -9,39 +9,28 @@ from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .models import Transaction
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 import logging
+from django.core.mail import send_mail
 
-
-# # logger setup
-# #Create and configure logger 
-# logging.basicConfig(filename="log_file.log", 
-#                     format='%(asctime)s %(message)s'
-#                     )  
-# #Creating an object 
-# logger=logging.getLogger()  
-# #Setting the threshold of logger to DEBUG 
-# # logger.setLevel(logging.INFO)  
-# # Create your views here.
-
-# logger setup
-#Create and configure logger 
-logging.basicConfig(filename="ExpressStoresPostAPI_log_file.log", 
-format='%(asctime)s %(message)s'
-)  
-#Creating an object 
-logger=logging.getLogger()  
-#Setting the threshold of logger to DEBUG 
+logging.basicConfig(filename="transaction_logs.log",
+                    format='%(asctime)s %(message)s'
+                    )
+# Creating an object
+logger = logging.getLogger()
+# Setting the threshold of logger to DEBUG
 logger.setLevel(logging.INFO)
 
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def addTransaction(request):
     if request.method == 'POST':
-        serializer=TransactionSerializer(data=request.data)
+        serializer=TransactionSerializer(data=request.data,many=True)
         
         if serializer.is_valid():
             serializer.save()
